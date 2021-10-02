@@ -11,18 +11,18 @@ return [
     'routes' => [
         'chat_rooms' => [
             'name' => 'chat-rooms',
-            'model' => \Larapress\Notifications\Models\ChatRoom::class,
-            'provider' => \Larapress\Notifications\CRUD\ChatRoomCRUDProvider::class,
+            'model' => \Larapress\Chat\Models\ChatRoom::class,
+            'provider' => \Larapress\Chat\CRUD\ChatRoomCRUDProvider::class,
         ],
         'chat_messages' => [
             'name' => 'chat-messages',
-            'model' => \Larapress\Notifications\Models\ChatMessage::class,
-            'provider' => \Larapress\Notifications\CRUD\ChatMessageCRUDProvider::class,
+            'model' => \Larapress\Chat\Models\ChatMessage::class,
+            'provider' => \Larapress\Chat\CRUD\ChatMessageCRUDProvider::class,
         ],
     ],
 
     'permissions' => [
-        \Larapress\Notifications\CRUD\ChatMessageCRUDProvider::class,
-        \Larapress\Notifications\CRUD\ChatRoomCRUDProvider::class,
+        \Larapress\Chat\CRUD\ChatMessageCRUDProvider::class,
+        \Larapress\Chat\CRUD\ChatRoomCRUDProvider::class,
     ],
 ];

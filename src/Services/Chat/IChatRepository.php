@@ -15,7 +15,7 @@ interface IChatRepository {
      *
      * @return PaginatedResponse
      */
-    public function getJoinedRoomsPaginated (IProfileUser $user, $page = 0, $limit = null);
+    public function getJoinedRoomsPaginated (IProfileUser $user, $page = 1, $limit = null);
 
     /**
      * Undocumented function
@@ -26,7 +26,7 @@ interface IChatRepository {
      *
      * @return PaginatedResponse
      */
-    public function getClosedRoomsPaginated (IProfileUser $user, $page = 0, $limit = null);
+    public function getClosedRoomsPaginated (IProfileUser $user, $page = 1, $limit = null);
 
     /**
      * Undocumented function
@@ -38,5 +38,5 @@ interface IChatRepository {
      *
      * @return PaginatedResponse
      */
-    public function getRoomMessagesPaginated (IProfileUser $user, $room, $page = 0, $limit = null);
+    public function getRoomMessagesPaginated (IProfileUser $user, $room, $page = 1, $limit = null);
 }

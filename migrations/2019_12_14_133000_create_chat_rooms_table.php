@@ -39,8 +39,17 @@ class CreateChatRoomsTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('user_id', false, true);
             $table->bigInteger('room_id', false, true);
+            $table->unique(['room_id', 'user_id']);
             $table->integer('flags')->default(0);
             $table->json('data')->nullable();
+            $table->timestamps();
+
+            $table->index([
+                'created_at',
+                'updated_at',
+                'room_id',
+                'user_id',
+            ], 'chat_user_pivot_full_index');
 
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('room_id')->references('id')->on('chat_rooms');

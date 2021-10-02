@@ -2,10 +2,12 @@
 
 namespace Larapress\Chat\Services\Chat;
 
+use Carbon\Carbon;
 use Larapress\CRUD\Exceptions\AppException;
 use Larapress\Chat\Models\ChatMessage;
 use Larapress\Chat\Models\ChatRoom;
 use Larapress\Chat\Models\ChatUserPivot;
+use Larapress\CRUD\Extend\Helpers;
 use Larapress\Profiles\IProfileUser;
 
 class ChatService implements IChatService
@@ -95,10 +97,55 @@ class ChatService implements IChatService
             throw new AppException(AppException::ERR_ACCESS_DENIED);
         }
 
-        $room->participants()->attach($user, [
-            'flags' => $flags,
-            'data' => $data,
-        ]);
+        if (!in_array($user, $this->getRoomParticipantIds($room))) {
+            $room->participants()->attach($user, [
+                'flags' => $flags,
+                'data' => $data,
+            ]);
+        }
+
+        return $room;
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param IProfileUser $author
+     * @param ChatRoom $room
+     * @param int|IProfileUser $user
+     * @param array $data
+     * @param int   $flags
+     *
+     * @return ChatRoom
+     */
+    public function updateParticipantInRoom(IProfileUser $author, ChatRoom $room, $user, $data, $flags)
+    {
+        if (is_object($user)) {
+            $user = $user->id;
+        }
+
+        if (
+            !$this->canUserAdministerRoom($author, $room) && !$this->isRoomPublicJoin($room) && $user !== $author->id
+        ) {
+            throw new AppException(AppException::ERR_ACCESS_DENIED);
+        }
+
+        if (($flags & ChatUserPivot::FLAGS_ADMIN) !== 0 && !$this->canUserAdministerRoom($author, $room)) {
+            throw new AppException(AppException::ERR_ACCESS_DENIED);
+        }
+
+
+        $pivot = ChatUserPivot::query()
+            ->where('user_id', $user)
+            ->where('room_id', $room)
+            ->first();
+
+        if (!is_null($pivot)) {
+            $pivot->update([
+                'flags' => $flags,
+                'data' => array_merge($pivot->data, $data),
+            ]);
+        }
 
         return $room;
     }
@@ -133,6 +180,59 @@ class ChatService implements IChatService
     /**
      * Undocumented function
      *
+     * @param IProfileUser $user
+     * @param ChatRoom|int $room
+     *
+     * @return boolean
+     */
+    public function markRoomSeenByUser(IProfileUser $user, $room)
+    {
+        if (is_object($room)) {
+            $room = $room->id;
+        }
+
+        /** @var ChatUserPivot */
+        $pivot = ChatUserPivot::query()
+            ->where('user_id', $user->id)
+            ->where('room_id', $room)
+            ->first();
+
+        if (!is_null($pivot)) {
+            $pivot->touch();
+        }
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param int|ChatRoom $room
+     * @return array
+     */
+    public function getRoomParticipantIds($room)
+    {
+        if (is_object($room)) {
+            $room = $room->id;
+        }
+
+        return Helpers::getCachedValue(
+            'chat_room_participants',
+            ['room:' . $room],
+            24 * 60 * 60,
+            true,
+            function () use ($room) {
+                return ChatUserPivot::query()
+                    ->where('room_id', $room)
+                    ->select('user_id')
+                    ->get()
+                    ->pluck('user_id')
+                    ->toArray();
+            }
+        );
+    }
+
+    /**
+     * Undocumented function
+     *
      * @param ChatRoom $room
      * @param int|IProfileUser $user
      * @param string $message
@@ -153,13 +253,28 @@ class ChatService implements IChatService
             throw new AppException(AppException::ERR_ACCESS_DENIED);
         }
 
-        return ChatMessage::create([
+        /** @var ChatMessage */
+        $msg = ChatMessage::create([
             'author_id' => $user->id,
             'room_id' => $room->id,
             'message' => $message,
             '$data' => $data,
             'flags' => $flags,
         ]);
+
+        $msg->load([
+            'author.form_profile_default'
+        ]);
+
+        // update room seen timestamp
+        ChatUserPivot::query()
+            ->where('user_id', $user->id)
+            ->where('room_id', $room->id)
+            ->update([
+                'updated_at' => Carbon::now(),
+            ]);
+
+        return $msg;
     }
 
     /**

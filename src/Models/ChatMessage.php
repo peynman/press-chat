@@ -24,9 +24,6 @@ use Larapress\Profiles\IProfileUser;
  */
 class ChatMessage extends Model
 {
-    const FLAGS_PUBLIC = 1;
-    const FLAGS_PRIVATE = 1;
-
     use SoftDeletes;
 
     protected $table = 'chat_messages';

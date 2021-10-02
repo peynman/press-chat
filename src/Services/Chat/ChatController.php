@@ -28,6 +28,8 @@ class ChatController extends Controller
             ->name('chat.any.add-room-participant');
         Route::post('chat/remove-room-participant', '\\' . self::class . '@removeRoomParticipant')
             ->name('chat.any.remove-room-participant');
+        Route::post('chat/mark-seen', '\\' . self::class . '@markRoomSeen')
+            ->name('chat.any.mark-seen');
 
         // messaging
         Route::post('chat/post-message', '\\' . self::class . '@postMessage')
@@ -135,6 +137,24 @@ class ChatController extends Controller
                 $request->getRoom(),
                 $request->getParticipantId()
             )
+        ];
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param IChatService $service
+     * @param RoomUpdateRequest $request
+     *
+     * @return Response
+     */
+    public function markRoomSeen(IChatService $service, RoomUpdateRequest $request) {
+        /** @var IProfileUser */
+        $user = Auth::user();
+        $room = $service->markRoomSeenByUser($user, $request->getRoom());
+        return [
+            'message' => trans('larapress::chat.room_updated'),
+            'room' => $room,
         ];
     }
 

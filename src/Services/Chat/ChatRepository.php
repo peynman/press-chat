@@ -18,11 +18,13 @@ class ChatRepository implements IChatRepository
      *
      * @return PaginatedResponse
      */
-    public function getJoinedRoomsPaginated(IProfileUser $user, $page = 0, $limit = null)
+    public function getJoinedRoomsPaginated(IProfileUser $user, $page = 1, $limit = null)
     {
         $limit = PaginatedResponse::safeLimit($limit);
+
         return new PaginatedResponse(
             ChatRoom::query()
+                ->withCount('unseen_messages')
                 ->whereHas('participants', function ($q) use ($user) {
                     $q->where('users.id', $user->id);
                 })
@@ -40,9 +42,10 @@ class ChatRepository implements IChatRepository
      *
      * @return PaginatedResponse
      */
-    public function getClosedRoomsPaginated(IProfileUser $user, $page = 0, $limit = null)
+    public function getClosedRoomsPaginated(IProfileUser $user, $page = 1, $limit = null)
     {
         $limit = PaginatedResponse::safeLimit($limit);
+
         return new PaginatedResponse(
             ChatRoom::query()
                 ->whereHas('participants', function ($q) use ($user) {
@@ -63,16 +66,20 @@ class ChatRepository implements IChatRepository
      *
      * @return PaginatedResponse
      */
-    public function getRoomMessagesPaginated(IProfileUser $user, $room, $page = 0, $limit = null)
+    public function getRoomMessagesPaginated(IProfileUser $user, $room, $page = 1, $limit = null)
     {
         if (is_object($room)) {
             $room = $room->id;
         }
+
         $limit = PaginatedResponse::safeLimit($limit);
+
         return new PaginatedResponse(
             ChatMessage::query()
+                ->with(['author.form_profile_default'])
                 ->where('room_id', $room)
                 ->whereNull('parent_id')
+                ->orderBy('id', 'desc')
                 ->paginate($limit, ['*'], 'page', $page)
         );
     }

@@ -20,6 +20,7 @@ class ChatMessageCRUDProvider implements ICRUDProvider
 
     public $verbs = [
         ICRUDVerb::VIEW,
+        ICRUDVerb::SHOW,
         ICRUDVerb::EDIT,
         ICRUDVerb::CREATE,
         ICRUDVerb::DELETE,
@@ -104,7 +105,7 @@ class ChatMessageCRUDProvider implements ICRUDProvider
      */
     public function onBeforeUpdate($args): array
     {
-        return $this->onBeforeCreate($args);
+        return $args;
     }
 
     /**

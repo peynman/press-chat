@@ -56,6 +56,24 @@ interface IChatService {
     /**
      * Undocumented function
      *
+     * @param int|ChatRoom $room
+     * @return array
+     */
+    public function getRoomParticipantIds($room);
+
+    /**
+     * Undocumented function
+     *
+     * @param IProfileUser $user
+     * @param ChatRoom|int $room
+     *
+     * @return boolean
+     */
+    public function markRoomSeenByUser(IProfileUser $user, $room);
+
+    /**
+     * Undocumented function
+     *
      * @param ChatRoom $room
      * @param int|IProfileUser $user
      * @param string $message

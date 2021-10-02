@@ -1,6 +1,6 @@
 <?php
 
-namespace Larapress\Notifications\CRUD;
+namespace Larapress\Chat\CRUD;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -21,6 +21,7 @@ class ChatRoomCRUDProvider implements ICRUDProvider
 
     public $verbs = [
         ICRUDVerb::VIEW,
+        ICRUDVerb::SHOW,
         ICRUDVerb::EDIT,
         ICRUDVerb::CREATE,
         ICRUDVerb::DELETE,
@@ -48,7 +49,10 @@ class ChatRoomCRUDProvider implements ICRUDProvider
     public function getValidRelations(): array
     {
         return [
-            'author' => config('larapress.crud.user.provider')
+            'author' => config('larapress.crud.user.provider'),
+            'participants' => config('larapress.crud.user.provider'),
+            'messages' => config('larapress.chat.routes.chat_messages.provider'),
+            'unseen_messages' => config('larapress.chat.routes.chat_messages.provider'),
         ];
     }
 
